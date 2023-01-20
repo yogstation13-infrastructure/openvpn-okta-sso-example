@@ -155,4 +155,6 @@ def logout():
 if __name__ == '__main__':
     print("Start manager")
     openvpnManager.Start()
-    app.run(host="localhost", port=8080, debug=True, use_reloader=False)
+
+    import bjoern
+    bjoern.run(app, "127.0.0.1", 8080)
