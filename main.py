@@ -126,8 +126,8 @@ def callback():
     userinfo_response = userinfo_response.json()
     unique_id = userinfo_response["sub"]
     user_email = userinfo_response["email"]
-    user_name = userinfo_response["username"]
-    username = userinfo_response["username"]
+    user_name = userinfo_response["preferred_username"]
+    username = userinfo_response["preferred_username"]
     print(userinfo_response)
 
     user = User(
