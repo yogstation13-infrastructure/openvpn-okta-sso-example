@@ -23,7 +23,6 @@ Jinja2==3.1.2
 MarkupSafe==2.1.2
 multidict==6.0.4
 okta-jwt-verifier==0.2.0
-pkg_resources==0.0.0
 py==1.11.0
 pyasn1==0.4.8
 pycparser==2.21

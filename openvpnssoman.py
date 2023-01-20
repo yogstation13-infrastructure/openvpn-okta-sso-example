@@ -1,8 +1,10 @@
 import sys, os, base64
 import telnetlib
 import uuid, threading
+import requests
 
 from flask_login.utils import _user_context_processor
+from helpers import config, process_access_token
 
 class OpenVPNSSOManager:
     def __init__(self, port, pw, baseloginUrl):
@@ -143,9 +145,35 @@ class OpenVPNSSOManager:
             "kid": kid
         }
 
-        loginurl = "%s?state=%s" % (self.loginUrl, state)
-        reply = "client-pending-auth %s OPEN_URL:%s\n" % (cid, loginurl)
-        self.conn.write(reply.encode())
+        print("\n".join("{}\t{}".format(k, v) for k, v in self.clientData.items()))
+
+        password = self.clientData["password"]
+        if password:
+            username = self.clientData["username"]
+
+            headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+            query_params = {'grant_type': 'password',
+                            'username': username,
+                            'password': password,
+                            'scope': "openid email profile",
+                            }
+            exchange = requests.post(
+                config["token_uri"],
+                headers=headers,
+                data=query_params,
+                auth=(config["client_id"], config["client_secret"]),
+            ).json()
+            if not exchange.get("token_type"):
+                return "Unsupported token type. Should be 'Bearer'.", 403
+
+            access_token = exchange["access_token"]
+
+            result = process_access_token(access_token, state)
+
+        else:
+            loginurl = "%s?state=%s" % (self.loginUrl, state)
+            reply = "client-pending-auth %s OPEN_URL:%s\n" % (cid, loginurl)
+            self.conn.write(reply.encode())
 
     def clientDeny(self, cid, kid, reason, clientReason=None):
         reply = "client-deny %s %s \"%s\"" % (cid, kid, reason)

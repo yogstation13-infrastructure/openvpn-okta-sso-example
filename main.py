@@ -6,11 +6,10 @@ from flask_login import (
     LoginManager,
     current_user,
     login_required,
-    login_user,
-    logout_user,
+    logout_user, login_user,
 )
 
-from helpers import is_access_token_valid, is_id_token_valid, config
+from helpers import config, process_access_token
 from openvpnssoman import OpenVPNSSOManager
 from user import User
 
@@ -113,36 +112,15 @@ def callback():
         return "Unsupported token type. Should be 'Bearer'.", 403
 
     access_token = exchange["access_token"]
-    id_token = exchange["id_token"]
 
-    # Authorization flow successful, get userinfo and login user
-    userinfo_response = requests.get(config["userinfo_uri"],
-                                     headers={'Authorization': f'Bearer {access_token}'})
-
-    if userinfo_response.status_code != 200:
-        return "Invalid token", 403
-
-
-    userinfo_response = userinfo_response.json()
-    unique_id = userinfo_response["sub"]
-    user_email = userinfo_response["email"]
-    user_name = userinfo_response["preferred_username"]
-    username = userinfo_response["preferred_username"]
-    print(userinfo_response)
-
-    user = User(
-        id_=unique_id, name=user_name, email=user_email
-    )
-
-    if not User.get(unique_id):
-        User.create(unique_id, user_name, user_email)
-
-    if openvpnManager.AllowUser(state, username):
+    user = process_access_token(access_token, state)
+    if user:
         login_user(user)
 
         return redirect(url_for("successfulLogin"))
     else:
-        return "Unknown error", 403
+        return "Unable to authenticate", 403
+
 
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
