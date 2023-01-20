@@ -115,20 +115,17 @@ def callback():
     access_token = exchange["access_token"]
     id_token = exchange["id_token"]
 
-    if not is_access_token_valid(access_token, config["issuer"]):
-        return "Access token is invalid", 403
-
-    if not is_id_token_valid(id_token, config["issuer"], config["client_id"], userStorage["nonce"]):
-        return "ID token is invalid", 403
-
     # Authorization flow successful, get userinfo and login user
     userinfo_response = requests.get(config["userinfo_uri"],
                                      headers={'Authorization': f'Bearer {access_token}'}).json()
 
+    if userinfo_response.status_code != 200:
+        return "Invalid token", 403
+
     unique_id = userinfo_response["sub"]
     user_email = userinfo_response["email"]
     user_name = userinfo_response["given_name"]
-    username = userinfo_response["preferred_username"]
+    username = userinfo_response["username"]
     print(userinfo_response)
 
     user = User(
