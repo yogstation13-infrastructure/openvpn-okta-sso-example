@@ -9,7 +9,7 @@ from flask_login import (
     logout_user, login_user,
 )
 
-from helpers import config, process_access_token
+from helpers import config
 from openvpnssoman import OpenVPNSSOManager
 from user import User
 
@@ -113,7 +113,7 @@ def callback():
 
     access_token = exchange["access_token"]
 
-    user = process_access_token(access_token, state)
+    user = openvpnManager.process_access_token(access_token, state)
     if user:
         login_user(user)
 

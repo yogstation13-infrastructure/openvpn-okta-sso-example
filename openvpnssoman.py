@@ -4,7 +4,9 @@ import uuid, threading
 import requests
 
 from flask_login.utils import _user_context_processor
-from helpers import config, process_access_token
+from helpers import config
+from user import User
+
 
 class OpenVPNSSOManager:
     def __init__(self, port, pw, baseloginUrl):
@@ -168,7 +170,7 @@ class OpenVPNSSOManager:
 
             access_token = exchange["access_token"]
 
-            result = process_access_token(access_token, state)
+            result = self.process_access_token(access_token, state)
 
         else:
             loginurl = "%s?state=%s" % (self.loginUrl, state)
@@ -185,3 +187,25 @@ class OpenVPNSSOManager:
     def clientAllow(self, cid, kid, b64User):
         reply = 'client-auth %s %s\npush "auth-token-user %s"\nEND\n' % (cid, kid, b64User)
         self.conn.write(reply.encode())
+
+    def process_access_token(self, access_token, state):
+        # Authorization flow successful, get userinfo and login user
+        userinfo_response = requests.get(config["userinfo_uri"],
+                                         headers={'Authorization': f'Bearer {access_token}'})
+        if userinfo_response.status_code != 200:
+            return False
+        userinfo_response = userinfo_response.json()
+        unique_id = userinfo_response["sub"]
+        user_email = userinfo_response["email"]
+        user_name = userinfo_response["preferred_username"]
+        username = userinfo_response["preferred_username"]
+        print(userinfo_response)
+        user = User(
+            id_=unique_id, name=user_name, email=user_email
+        )
+        if not User.get(unique_id):
+            User.create(unique_id, user_name, user_email)
+        if self.AllowUser(state, username):
+            return user
+        else:
+            return False
