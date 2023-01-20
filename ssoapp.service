@@ -5,10 +5,10 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=ssoappuser
-WorkingDirectory=/home/ssoapp/openvpn-okta-sso-example
+User=ssoapp
+WorkingDirectory=/opt/openvpn-okta-sso-example
 #Test for a new version to replace with
-ExecStart=/usr/bin/python3 /home/ssoapp/openvpn-okta-sso-example/main.py
+ExecStart=/usr/bin/python3 /opt/openvpn-okta-sso-example/main.py
 Restart=on-abort
 
 [Install]
