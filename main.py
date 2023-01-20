@@ -96,7 +96,7 @@ def callback():
         return "Unknown login", 403
     query_params = {'grant_type': 'authorization_code',
                     'code': code,
-                    'redirect_uri': request.base_url
+                    'redirect_uri': config["redirect_uri"]
                     }
     print(request.base_url)
     query_params = requests.compat.urlencode(query_params)
