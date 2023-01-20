@@ -41,7 +41,8 @@ class OpenVPNSSOManager:
     def Connect(self):
         try:
             self.conn.open('127.0.0.1', self.port)
-            self.conn.write(self.pw.encode())
+            self.conn.write(("%s\n" % self.pw).encode())
+            self.conn.write("hold release\n".encode())
             print("OpenVPN Connected")
 
             while True:
