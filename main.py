@@ -28,7 +28,7 @@ NONCE = 'SampleNonce'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-openvpnManager = OpenVPNSSOManager(config["management_port"], config["login_uri"])
+openvpnManager = OpenVPNSSOManager(config["management_port"], config["management_pw"], config["login_uri"])
 
 
 @login_manager.user_loader

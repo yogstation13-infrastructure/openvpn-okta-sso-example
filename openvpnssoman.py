@@ -5,10 +5,11 @@ import uuid, threading
 from flask_login.utils import _user_context_processor
 
 class OpenVPNSSOManager:
-    def __init__(self, port, baseloginUrl):
+    def __init__(self, port, pw, baseloginUrl):
         self.port = port
         self.loginUrl = baseloginUrl
         self.conn = telnetlib.Telnet()
+        self.pw = pw
         self.storage = {}
         self.started = False
         self.sessions = {}
@@ -40,6 +41,7 @@ class OpenVPNSSOManager:
     def Connect(self):
         try:
             self.conn.open('127.0.0.1', self.port)
+            self.conn.write(self.pw.encode())
             print("OpenVPN Connected")
 
             while True:
