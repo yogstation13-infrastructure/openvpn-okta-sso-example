@@ -117,11 +117,13 @@ def callback():
 
     # Authorization flow successful, get userinfo and login user
     userinfo_response = requests.get(config["userinfo_uri"],
-                                     headers={'Authorization': f'Bearer {access_token}'}).json()
+                                     headers={'Authorization': f'Bearer {access_token}'})
 
     if userinfo_response.status_code != 200:
         return "Invalid token", 403
 
+
+    userinfo_response = userinfo_response.json()
     unique_id = userinfo_response["sub"]
     user_email = userinfo_response["email"]
     user_name = userinfo_response["given_name"]
